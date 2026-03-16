@@ -8,7 +8,7 @@
  * Project Settings > Plugins > LLM Assistant 에 노출되는 설정.
  * API 키는 EditorPerProjectUserSettings에 저장되어 소스 컨트롤에 올라가지 않음.
  */
-UCLASS(config = EditorPerProjectUserSettings, defaultconfig, meta = (DisplayName = "LLM Assistant"))
+UCLASS(config = Game, defaultconfig, meta = (DisplayName = "LLM Assistant"))
 class LLMASSISTANTCORE_API ULLMAssistantSettings : public UDeveloperSettings
 {
     GENERATED_BODY()
@@ -48,4 +48,5 @@ public:
 
     // UDeveloperSettings
     virtual FName GetCategoryName() const override { return TEXT("Plugins"); }
+    virtual FName GetSectionName() const override { return TEXT("LLMAssistant"); }
 };

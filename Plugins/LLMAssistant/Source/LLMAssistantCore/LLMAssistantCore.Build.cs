@@ -34,7 +34,8 @@ public class LLMAssistantCore : ModuleRules
 				"Core",
                 "CoreUObject",
                 "Engine",
-                "DeveloperSettings"
+                "DeveloperSettings",
+				"Settings"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
