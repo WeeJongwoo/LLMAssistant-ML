@@ -1,4 +1,4 @@
-using UnrealBuildTool;
+﻿using UnrealBuildTool;
 using System.IO;
 
 public class LLMAssistantEditor : ModuleRules
@@ -23,7 +23,7 @@ public class LLMAssistantEditor : ModuleRules
             "Core",
             "CoreUObject",
             "Engine",
-            "LLMAssistant"     // Runtime 모듈 참조
+            "LLMAssistantCore"     // Runtime 모듈 참조
         });
 
         PrivateDependencyModuleNames.AddRange(new string[]

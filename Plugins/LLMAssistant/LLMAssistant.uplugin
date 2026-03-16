@@ -10,9 +10,9 @@
 	"CanContainContent": false,
 	"Modules": [
 		{
-			"Name": "LLMAssistant",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"Name": "LLMAssistantCore",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
 		},
 		{
 			"Name": "LLMAssistantEditor",

@@ -3,9 +3,9 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class LLMAsistant : ModuleRules
+public class LLMAssistantCore : ModuleRules
 {
-	public LLMAsistant(ReadOnlyTargetRules Target) : base(Target)
+	public LLMAssistantCore(ReadOnlyTargetRules Target) : base(Target)
 	{
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         IWYUSupport = IWYUSupport.Full;
@@ -34,6 +34,7 @@ public class LLMAsistant : ModuleRules
 				"Core",
                 "CoreUObject",
                 "Engine",
+                "DeveloperSettings"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
