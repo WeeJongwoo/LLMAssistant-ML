@@ -63,6 +63,11 @@ void UNPCTrainer::ResetAgentEpisode_Implementation(const int32 AgentId)
     PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
 
     StepCountMap.Add(AgentId, 0);
+
+    if (LearningManager.IsValid())
+    {
+        LearningManager->OnEpisodeComplete();
+    }
 }
 
 void UNPCTrainer::OnAgentsAdded_Implementation(const TArray<int32>& AgentIds)

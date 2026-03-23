@@ -62,5 +62,30 @@ protected:
 	UPROPERTY() 
 	TObjectPtr<ULearningAgentsCritic> Critic;
 
-	bool bTrainingStarted = false;
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	bool bReinitializeCritic = true;
+
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	bool bReinitializePolicy = true;
+
+
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	bool bInferenceMode = false;  // true면 추론 모드로 시작
+
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	FString SnapshotDir = TEXT("NPCSnapshots");  // 저장 디렉토리
+
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	int32 SaveIntervalEpisodes = 100;  // N 에피소드마다 자동 저장
+
+	int32 CompletedEpisodes = 0;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Learning")
+	void SaveNetworks();
+
+	UFUNCTION(BlueprintCallable, Category = "Learning")
+	void LoadNetworks();
+
+	void OnEpisodeComplete();  // Trainer에서 호출
 };

@@ -19,7 +19,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> GoalActor;
 
-	float TraceRange = 50.0f;
+	float TraceRange = 200.0f;
 
 protected:
 	

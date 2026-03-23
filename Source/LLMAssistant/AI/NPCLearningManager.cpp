@@ -29,11 +29,19 @@ void ANPCLearningManager::BeginPlay()
 	Interactor = Cast<UNPCInteractor>(ULearningAgentsInteractor::MakeInteractor(Manager, UNPCInteractor::StaticClass(), TEXT("NPCInteractor")));
 	Interactor->SetGoalActor(GoalActor);
 
-	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("Policy"), nullptr, PolicyNetworkAsset, nullptr);
-	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("Critic"), CriticNetworkAsset);
-	Trainer = Cast<UNPCTrainer>(ULearningAgentsTrainer::MakeTrainer(Manager, Interactor, Policy, Critic, UNPCTrainer::StaticClass(), TEXT("Trainer")));
-	Trainer->SetGoalActor(GoalActor);
+	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("Policy"), nullptr, PolicyNetworkAsset, nullptr, bReinitializePolicy, bReinitializePolicy, bReinitializePolicy);
+	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("Critic"), CriticNetworkAsset, bReinitializeCritic);
 
+	if (!bInferenceMode)
+	{
+		FLearningAgentsTrainerSettings TrainerSettings;
+		TrainerSettings.MaxEpisodeStepNum = 2000;
+
+		Trainer = Cast<UNPCTrainer>(ULearningAgentsTrainer::MakeTrainer(Manager, Interactor, Policy, Critic, UNPCTrainer::StaticClass(), TEXT("Trainer"), TrainerSettings));
+		Trainer->SetGoalActor(GoalActor);
+		Trainer->SetLearningManager(this);
+	}
+	
 	for (AMLNPCCharacter* NPC : NPCAgents)
 	{
 		if (NPC)
@@ -41,6 +49,11 @@ void ANPCLearningManager::BeginPlay()
 			int32 Id = Manager->AddAgent(NPC);
 			//UE_LOG(LogTemp, Warning, TEXT("Registered Agent %d: %s"), Id, *NPC->GetName());
 		}
+	}
+
+	if (bInferenceMode)
+	{
+		LoadNetworks();
 	}
 }
 
@@ -71,11 +84,82 @@ void ANPCLearningManager::Tick(float DeltaTime)
 
 	//UE_LOG(LogTemp, Log, TEXT("Manager Tick - Running Training"));
 
-	if (!Manager || !Trainer)
+	if (!Manager || !Policy)
 	{
 		return;
 	}
 
-	Trainer->RunTraining();
+	if(bInferenceMode)
+	{
+		Policy->RunInference();
+	}
+	else
+	{
+		if (!Trainer)
+		{
+			return;
+		}
+		Trainer->RunTraining();
+	}
+}
+
+void ANPCLearningManager::SaveNetworks()
+{
+	const FString BasePath = FPaths::ProjectSavedDir() / SnapshotDir;
+
+	if (Policy)
+	{
+		if (ULearningAgentsNeuralNetwork* PolicyNet = Policy->GetPolicyNetworkAsset())
+		{
+			FFilePath PolicyPath;
+			PolicyPath.FilePath = BasePath / TEXT("Policy");
+			PolicyNet->SaveNetworkToSnapshot(PolicyPath);
+		}
+	}
+	if (Critic)
+	{
+		if (ULearningAgentsNeuralNetwork* CriticNet = Critic->GetCriticNetworkAsset())
+		{
+			FFilePath CriticPath;
+			CriticPath.FilePath = BasePath / TEXT("Critic");
+			CriticNet->SaveNetworkToSnapshot(CriticPath);
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("Networks saved to %s"), *BasePath);
+}
+
+void ANPCLearningManager::LoadNetworks()
+{
+	const FString BasePath = FPaths::ProjectSavedDir() / SnapshotDir;
+
+	if (Policy)
+	{
+		if (ULearningAgentsNeuralNetwork* PolicyNet = Policy->GetPolicyNetworkAsset())
+		{
+			FFilePath PolicyPath;
+			PolicyPath.FilePath = BasePath / TEXT("Policy");
+			PolicyNet->LoadNetworkFromSnapshot(PolicyPath);
+		}
+	}
+	if (Critic)
+	{
+		if (ULearningAgentsNeuralNetwork* CriticNet = Critic->GetCriticNetworkAsset())
+		{
+			FFilePath CriticPath;
+			CriticPath.FilePath = BasePath / TEXT("Critic");
+			CriticNet->LoadNetworkFromSnapshot(CriticPath);
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("Networks loaded from %s"), *BasePath);
+}
+
+void ANPCLearningManager::OnEpisodeComplete()
+{
+	CompletedEpisodes++;
+	if (SaveIntervalEpisodes > 0 && CompletedEpisodes % SaveIntervalEpisodes == 0)
+	{
+		SaveNetworks();
+		UE_LOG(LogTemp, Log, TEXT("Auto-saved at episode %d"), CompletedEpisodes);
+	}
 }
 

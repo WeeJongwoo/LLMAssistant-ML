@@ -4,6 +4,7 @@
 #include "MLNPCCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
@@ -18,6 +19,10 @@ AMLNPCCharacter::AMLNPCCharacter()
 	MoveComp->NavAgentProps.bCanCrouch = true;
 	MoveComp->GetNavAgentPropertiesRef().bCanJump = true;
 	MoveComp->bCanWalkOffLedgesWhenCrouching = true;
+	MoveComp->MaxCustomMovementSpeed = 250.0f;
+	MoveComp->FallingLateralFriction = 4.5f;
+	MoveComp->MaxWalkSpeed = 500.0f;
+
 
 	TraceStartForCrouch = CreateDefaultSubobject<USceneComponent>(TEXT("TraceStartForCrouch"));
 	TraceStartForJump = CreateDefaultSubobject<USceneComponent>(TEXT("TraceStartForJump"));
@@ -43,6 +48,11 @@ void AMLNPCCharacter::ExecuteAction(ENPCAction Action, const FVector& MoveDirect
 {
 	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 
+	if (!MoveComp)
+	{
+		return;
+	}
+
 	//UE_LOG(LogTemp, Warning, TEXT("ExecuteAction: %d, Dir: %s, Speed: %f"), (int32)Action, *MoveDirection.ToString(), GetCharacterMovement()->MaxWalkSpeed);
 
 	/*UE_LOG(LogTemp, Warning, TEXT("[JumpDebug] Action=%d IsFalling=%d IsOnGround=%d CanJump=%d bWantsCrouch=%d MovementMode=%d Vel.Z=%.1f"),
@@ -53,11 +63,6 @@ void AMLNPCCharacter::ExecuteAction(ENPCAction Action, const FVector& MoveDirect
 		MoveComp->bWantsToCrouch,
 		(int32)MoveComp->MovementMode,
 		MoveComp->Velocity.Z);*/
-
-	if (!MoveComp)
-	{
-		return;
-	}
 
 	if (MoveComp->IsFalling())
 	{
@@ -81,7 +86,7 @@ void AMLNPCCharacter::ExecuteAction(ENPCAction Action, const FVector& MoveDirect
 	case ENPCAction::Jump:
 		MoveComp->bWantsToCrouch = false;
 		Jump();
-		AddMovementInput(MoveDirection);
+		//AddMovementInput(MoveDirection);
 		break;
 	case ENPCAction::ClouchWalk:
 		MoveComp->bWantsToCrouch = true;
@@ -96,9 +101,8 @@ void AMLNPCCharacter::ResetToStart()
 {
 	SetActorLocation(StartLocation);
 	GetCharacterMovement()->StopMovementImmediately();
-
-	if (GetCharacterMovement()->IsCrouching())
-		UnCrouch();
+	GetCharacterMovement()->bWantsToCrouch = false;
 }
+
 
 
