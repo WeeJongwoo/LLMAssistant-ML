@@ -17,17 +17,53 @@ void UNPCTrainer::GatherAgentReward_Implementation(float& OutReward, const int32
     }
 
     const FVector Loc = NPC->GetActorLocation();
-    const float DistToGoal = FVector::Dist(Loc, GoalActor->GetActorLocation());
+    const FVector GoalLoc = GoalActor->GetActorLocation();
+    const float DistToGoal = FVector::Dist(Loc, GoalLoc);
 
     const float PrevDist = PrevDistMap.FindRef(AgentId);
-    const float ApproachReward = (PrevDist - DistToGoal) * 0.01f;
     PrevDistMap.Add(AgentId, DistToGoal);
-
-    const float TimeReward = -0.001f;
 
     const float GoalReward = (DistToGoal < 100.f) ? 10.f : 0.f;
 
-    OutReward = ApproachReward + TimeReward + GoalReward;
+    switch (RewardVariant)
+    {
+    case ERewardVariant::R1_Sparse:
+    {
+        const float TimeReward = -0.001f;
+        OutReward = TimeReward + GoalReward;
+        break;
+    }
+    case ERewardVariant::R2_Dense:
+    {
+        const float ApproachReward = (PrevDist - DistToGoal) * 0.01f;
+        const float TimeReward = -0.001f;
+        OutReward = ApproachReward + TimeReward + GoalReward;
+        break;
+    }
+    case ERewardVariant::R3_DenseOrientationCost:
+    {
+        const float ApproachReward = (PrevDist - DistToGoal) * 0.01f;
+        const float TimeReward = -0.001f;
+
+        FVector ToGoal = GoalLoc - Loc;
+        ToGoal.Z = 0.f;
+        ToGoal.Normalize();
+        FVector Forward = NPC->GetActorForwardVector();
+        Forward.Z = 0.f;
+        Forward.Normalize();
+        const float OrientationBonus = FVector::DotProduct(Forward, ToGoal) * 0.005f;
+
+        const float ActionCost = (NPC->GetLastAction() == ENPCAction::Jump) ? -0.002f : 0.f;
+
+        OutReward = ApproachReward + TimeReward + GoalReward + OrientationBonus + ActionCost;
+        break;
+    }
+    default:
+        OutReward = GoalReward;
+        break;
+    }
+
+    EpisodeReturnMap.FindOrAdd(AgentId, 0.f) += OutReward;
 }
 
 void UNPCTrainer::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion, const int32 AgentId)
@@ -44,13 +80,22 @@ void UNPCTrainer::GatherAgentCompletion_Implementation(ELearningAgentsCompletion
 
     const float DistToGoal = FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation());
 
+    const bool bGoalReached = DistToGoal < 100.f;
+    const bool bTimeout = Steps >= MaxSteps;
+
     const ELearningAgentsCompletion GoalCompletion =
-        ULearningAgentsCompletions::MakeCompletionOnCondition(DistToGoal < 100.f, ELearningAgentsCompletion::Termination, TEXT("GoalReached"));
+        ULearningAgentsCompletions::MakeCompletionOnCondition(bGoalReached, ELearningAgentsCompletion::Termination, TEXT("GoalReached"));
 
     const ELearningAgentsCompletion TimeoutCompletion =
-        ULearningAgentsCompletions::MakeCompletionOnCondition(Steps >= MaxSteps, ELearningAgentsCompletion::Truncation, TEXT("Timeout"));
+        ULearningAgentsCompletions::MakeCompletionOnCondition(bTimeout, ELearningAgentsCompletion::Truncation, TEXT("Timeout"));
 
     OutCompletion = ULearningAgentsCompletions::CompletionOr(GoalCompletion, TimeoutCompletion);
+
+    if (bGoalReached || bTimeout)
+    {
+        LastSuccessMap.Add(AgentId, bGoalReached);
+        NaturalCompletionMap.Add(AgentId, true);
+    }
 }
 
 void UNPCTrainer::ResetAgentEpisode_Implementation(const int32 AgentId)
@@ -58,15 +103,23 @@ void UNPCTrainer::ResetAgentEpisode_Implementation(const int32 AgentId)
     AMLNPCCharacter* NPC = Cast<AMLNPCCharacter>(GetAgent(AgentId));
     if (!NPC || !GoalActor) return;
 
+    const int32 EpisodeSteps = StepCountMap.FindRef(AgentId);
+    const float EpisodeReturn = EpisodeReturnMap.FindRef(AgentId);
+    const bool bSuccess = LastSuccessMap.FindRef(AgentId);
+    const bool bNatural = NaturalCompletionMap.FindRef(AgentId);
+
     NPC->ResetToStart();
 
     PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
-
     StepCountMap.Add(AgentId, 0);
+    EpisodeReturnMap.Add(AgentId, 0.f);
+    LastSuccessMap.Add(AgentId, false);
+    NaturalCompletionMap.Add(AgentId, false);
 
-    if (LearningManager.IsValid())
+    // 정책 업데이트로 인한 강제 리셋(중도 끊긴 에피소드)은 분석 노이즈이므로 로그 제외
+    if (LearningManager.IsValid() && EpisodeSteps > 0 && bNatural)
     {
-        LearningManager->OnEpisodeComplete();
+        LearningManager->OnEpisodeComplete(AgentId, EpisodeSteps, EpisodeReturn, bSuccess);
     }
 }
 

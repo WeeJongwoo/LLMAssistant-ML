@@ -19,8 +19,6 @@ AMLNPCCharacter::AMLNPCCharacter()
 	MoveComp->NavAgentProps.bCanCrouch = true;
 	MoveComp->GetNavAgentPropertiesRef().bCanJump = true;
 	MoveComp->bCanWalkOffLedgesWhenCrouching = true;
-	MoveComp->MaxCustomMovementSpeed = 250.0f;
-	MoveComp->FallingLateralFriction = 4.5f;
 	MoveComp->MaxWalkSpeed = 500.0f;
 
 
@@ -52,6 +50,8 @@ void AMLNPCCharacter::ExecuteAction(ENPCAction Action, const FVector& MoveDirect
 	{
 		return;
 	}
+
+	LastAction = Action;
 
 	//UE_LOG(LogTemp, Warning, TEXT("ExecuteAction: %d, Dir: %s, Speed: %f"), (int32)Action, *MoveDirection.ToString(), GetCharacterMovement()->MaxWalkSpeed);
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "LearningAgentsTrainer.h"
 #include "NPCLearningManager.generated.h"
 
 class ULearningAgentsManager;
@@ -14,6 +15,21 @@ class ULearningAgentsCritic;
 class AMLNPCCharacter;
 class ULearningAgentsNeuralNetwork;
 class UNPCMLManager;
+
+UENUM(BlueprintType)
+enum class EExperimentPreset : uint8
+{
+	Manual           UMETA(DisplayName = "Manual (use individual fields)"),
+	R1_Seed1234      UMETA(DisplayName = "R1 Sparse - Seed 1234"),
+	R1_Seed5678      UMETA(DisplayName = "R1 Sparse - Seed 5678"),
+	R1_Seed9999      UMETA(DisplayName = "R1 Sparse - Seed 9999"),
+	R2_Seed1234      UMETA(DisplayName = "R2 Dense - Seed 1234"),
+	R2_Seed5678      UMETA(DisplayName = "R2 Dense - Seed 5678"),
+	R2_Seed9999      UMETA(DisplayName = "R2 Dense - Seed 9999"),
+	R3_Seed1234      UMETA(DisplayName = "R3 Dense+OriCost - Seed 1234"),
+	R3_Seed5678      UMETA(DisplayName = "R3 Dense+OriCost - Seed 5678"),
+	R3_Seed9999      UMETA(DisplayName = "R3 Dense+OriCost - Seed 9999")
+};
 
 UCLASS()
 class LLMASSISTANT_API ANPCLearningManager : public AActor
@@ -53,7 +69,7 @@ protected:
 	UPROPERTY() 
 	TObjectPtr<UNPCInteractor> Interactor;
 
-	UPROPERTY() 
+	UPROPERTY(EditAnywhere, Category = "Learning")
 	TObjectPtr<UNPCTrainer> Trainer;
 
 	UPROPERTY() 
@@ -83,6 +99,24 @@ protected:
 
 	int32 CompletedEpisodes = 0;
 
+	// 실험 프리셋 — Manual이 아니면 아래 ExperimentSeed/Tag/SnapshotDir/RewardVariant 자동 적용
+	UPROPERTY(EditAnywhere, Category = "Experiment")
+	EExperimentPreset ExperimentPreset = EExperimentPreset::Manual;
+
+	// CSV 에피소드 로그 (실험 분석용)
+	UPROPERTY(EditAnywhere, Category = "Experiment")
+	bool bEnableEpisodeLog = true;
+
+	UPROPERTY(EditAnywhere, Category = "Experiment")
+	FString ExperimentTag = TEXT("R2_Seed0");  // 파일명 식별자: <Variant>_<Seed>
+
+	UPROPERTY(EditAnywhere, Category = "Experiment", meta = (ClampMin = "0"))
+	int32 ExperimentSeed = 1234;  // 학습 재현용 시드 (변형당 3개로 변경하며 반복)
+
+	FString EpisodeLogPath;
+
+	FLearningAgentsTrainerTrainingSettings TrainingSettings;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Learning")
 	void SaveNetworks();
@@ -90,5 +124,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Learning")
 	void LoadNetworks();
 
-	void OnEpisodeComplete();  // Trainer에서 호출
+	void OnEpisodeComplete(int32 AgentId, int32 EpisodeSteps, float EpisodeReturn, bool bSuccess);
 };

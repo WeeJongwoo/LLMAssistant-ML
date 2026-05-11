@@ -49,4 +49,9 @@ public:
 	float GetStandingTraceHeight() const { return StandingTraceHeight; }
 	float GetJumpTraceHeight() const { return JumpTraceHeight; }
 	float GetCrouchTraceHeight() const { return CrouchTraceHeight; }
+
+	ENPCAction GetLastAction() const { return LastAction; }
+
+private:
+	ENPCAction LastAction = ENPCAction::Walk;
 };
