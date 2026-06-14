@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="00329a5f-c94f-4cc1-9d1e-32f5775e3442" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/../Content/Level/MLMap.umap" beforeDir="false" afterPath="$PROJECT_DIR$/../Content/Level/MLMap.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCLearningManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCLearningManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCLearningManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCLearningManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCTrainer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCTrainer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCTrainer.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/AI/NPCTrainer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/NPC/MLNPCCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/NPC/MLNPCCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Source/LLMAssistant/NPC/MLNPCCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Source/LLMAssistant/NPC/MLNPCCharacter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,29 +12,29 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0,
-  "fromUser": false
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3D6s6FlaASpCR5EocMuOX0KO2uf" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.plot_results.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "thesis",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/USER/OneDrive/Desktop/LLMAssistant/analysis",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.plot_results.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;thesis&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/USER/OneDrive/Desktop/LLMAssistant/analysis&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="plot_results" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="analysis" />
@@ -88,6 +82,7 @@
       <option name="presentableId" value="Default" />
       <updated>1777613678985</updated>
       <workItem from="1777613680558" duration="1381000" />
+      <workItem from="1778742755964" duration="689000" />
     </task>
     <servers />
   </component>
