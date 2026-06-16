@@ -35,7 +35,7 @@ void ANPCLearningManager::BeginPlay()
 	if (!bInferenceMode)
 	{
 		FLearningAgentsTrainerSettings TrainerSettings;
-		TrainerSettings.MaxEpisodeStepNum = 2000;
+		TrainerSettings.MaxEpisodeStepNum = MaxEpisodeStepNum;
 
 		Trainer = Cast<UNPCTrainer>(ULearningAgentsTrainer::MakeTrainer(Manager, Interactor, Policy, Critic, UNPCTrainer::StaticClass(), TEXT("Trainer"), TrainerSettings));
 		Trainer->SetGoalActor(GoalActor);

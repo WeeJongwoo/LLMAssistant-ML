@@ -83,6 +83,9 @@ protected:
 
 	int32 CompletedEpisodes = 0;
 
+	UPROPERTY(EditAnywhere, Category = "Learning")
+	int32 MaxEpisodeStepNum = 3000;  // Trainer와 동일하게 설정
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Learning")
 	void SaveNetworks();

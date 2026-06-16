@@ -5,6 +5,8 @@
 #include "LLMAssistant/NPC/MLNPCCharacter.h"
 #include "LearningAgentsRewards.h"
 #include "LearningAgentsCompletions.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 
 void UNPCTrainer::GatherAgentReward_Implementation(float& OutReward, const int32 AgentId)
@@ -17,17 +19,26 @@ void UNPCTrainer::GatherAgentReward_Implementation(float& OutReward, const int32
     }
 
     const FVector Loc = NPC->GetActorLocation();
-    const float DistToGoal = FVector::Dist(Loc, GoalActor->GetActorLocation());
+    const FVector GoalLoc = GoalActor->GetActorLocation();
+    const float   StraightDist = FVector::Dist(Loc, GoalLoc);
 
-    const float PrevDist = PrevDistMap.FindRef(AgentId);
-    const float ApproachReward = (PrevDist - DistToGoal) * 0.01f;
-    PrevDistMap.Add(AgentId, DistToGoal);
+    float PathDist = GetPathDistanceToGoal(Loc, GoalLoc);
+    if (PathDist < 0.f) { PathDist = StraightDist; }
 
+    const float PrevPathDist = PrevPathDistMap.Contains(AgentId) ? PrevPathDistMap[AgentId] : PathDist;
+    PrevPathDistMap.Add(AgentId, PathDist);
+
+    // 경로거리가 줄어든 만큼 보상 (벽 우회해도 정상적으로 +)
+    const float ProgressReward = (PrevPathDist - PathDist) * 0.01f;
     const float TimeReward = -0.001f;
+    const float GoalReward = (StraightDist < 100.f) ? 10.f : 0.f;
 
-    const float GoalReward = (DistToGoal < 100.f) ? 10.f : 0.f;
+    // 거의 안 움직였으면(벽에 끼임) 페널티
+    const FVector PrevLoc = PrevLocMap.Contains(AgentId) ? PrevLocMap[AgentId] : Loc;
+    PrevLocMap.Add(AgentId, Loc);
+    const float StuckPenalty = (FVector::Dist(Loc, PrevLoc) < 1.f) ? -0.01f : 0.f;
 
-    OutReward = ApproachReward + TimeReward + GoalReward;
+    OutReward = ProgressReward + TimeReward + GoalReward + StuckPenalty;
 }
 
 void UNPCTrainer::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion, const int32 AgentId)
@@ -60,7 +71,11 @@ void UNPCTrainer::ResetAgentEpisode_Implementation(const int32 AgentId)
 
     NPC->ResetToStart();
 
-    PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
+    //PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
+
+    const float InitPath = GetPathDistanceToGoal(NPC->GetActorLocation(), GoalActor->GetActorLocation());
+    PrevPathDistMap.Add(AgentId, InitPath < 0.f ? FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()) : InitPath);
+    PrevLocMap.Add(AgentId, NPC->GetActorLocation());
 
     StepCountMap.Add(AgentId, 0);
 
@@ -78,7 +93,28 @@ void UNPCTrainer::OnAgentsAdded_Implementation(const TArray<int32>& AgentIds)
         AMLNPCCharacter* NPC = Cast<AMLNPCCharacter>(GetAgent(AgentId));
         if (!NPC || !GoalActor) continue;
 
-        PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
+        //PrevDistMap.Add(AgentId, FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()));
+
+        const float InitPath = GetPathDistanceToGoal(NPC->GetActorLocation(), GoalActor->GetActorLocation());
+        PrevPathDistMap.Add(AgentId, InitPath < 0.f ? FVector::Dist(NPC->GetActorLocation(), GoalActor->GetActorLocation()) : InitPath);
+        PrevLocMap.Add(AgentId, NPC->GetActorLocation());
+
         StepCountMap.Add(AgentId, 0);
     }
+}
+
+float UNPCTrainer::GetPathDistanceToGoal(const FVector& Start, const FVector& End) const
+{
+    UWorld* World = GetWorld();
+    if (!World) return -1.f;
+
+    UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(World);
+    if (!NavSys) return -1.f;
+
+    UNavigationPath* Path = NavSys->FindPathToLocationSynchronously(World, Start, End);
+    if (Path && Path->IsValid() && !Path->IsPartial())
+    {
+        return Path->GetPathLength();
+    }
+    return -1.f;
 }

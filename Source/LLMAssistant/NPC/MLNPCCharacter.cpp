@@ -64,6 +64,14 @@ void AMLNPCCharacter::ExecuteAction(ENPCAction Action, const FVector& MoveDirect
 		(int32)MoveComp->MovementMode,
 		MoveComp->Velocity.Z);*/
 
+	if (!MoveDirection.IsNearlyZero())
+	{
+		FRotator Target = MoveDirection.Rotation();
+		Target.Pitch = 0.f;
+		Target.Roll = 0.f;
+		SetActorRotation(Target);
+	}
+
 	if (MoveComp->IsFalling())
 	{
 		if (Action == ENPCAction::Jump)

@@ -26,9 +26,18 @@ protected:
 	// 에이전트별 스텝 카운터
 	TMap<int32, int32> StepCountMap;
 
-	static constexpr int32 MaxSteps = 1500;
+	static constexpr int32 MaxSteps = 3000;
 
 	TWeakObjectPtr<ANPCLearningManager> LearningManager;
+
+	// 에이전트별 이전 "경로거리"(NavMesh geodesic)
+	TMap<int32, float> PrevPathDistMap;
+
+	// 끼임 판정용 이전 위치
+	TMap<int32, FVector> PrevLocMap;
+
+	// NavMesh 경로거리 (실패 시 -1)
+	float GetPathDistanceToGoal(const FVector& Start, const FVector& End) const;
 
 protected:
 

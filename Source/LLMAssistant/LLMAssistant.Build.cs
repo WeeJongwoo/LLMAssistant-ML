@@ -15,7 +15,8 @@ public class LLMAssistant : ModuleRules
 			"InputCore", 
 			"EnhancedInput" ,
             "LearningAgents", 
-			"LearningAgentsTraining"
+			"LearningAgentsTraining",
+            "NavigationSystem"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
